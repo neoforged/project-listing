@@ -57,14 +57,14 @@
                   <v-col>
                     <v-tooltip text="Copy to clipboard">
                       <template v-slot:activator="{ props }">
-                        <v-btn density="comfortable" icon="mdi-content-copy" :disabled="!selectedVersion" v-bind="props"></v-btn>
+                        <v-btn density="comfortable" icon="mdi-content-copy" :disabled="!selectedVersion" v-bind="props" v-on:click="this.copySelected()" />
                       </template>
                     </v-tooltip>
                   </v-col>
                   <v-col>
                     <v-tooltip text="Download">
                       <template v-slot:activator="{ props }">
-                        <v-btn density="comfortable" icon="mdi-download" :disabled="!selectedVersion" v-bind="props"></v-btn>
+                        <v-btn density="comfortable" icon="mdi-download" :disabled="!selectedVersion" v-bind="props" :href="`https://maven.neoforged.net/releases/${mavenPath}/${selectedVersion}/${project.artifact.split(':')[1]}-${selectedVersion}.jar`" />
                       </template>
                     </v-tooltip>
                   </v-col>
@@ -195,6 +195,7 @@ export default {
         .then(res => res.slice(0, 10))
 
     return {
+      mavenPath: mavenPath,
       project: {
         owner: proj.owner,
         path: 'neoforged/' + repo,
@@ -225,6 +226,11 @@ export default {
   computed: {
     markdownToHtml() {
       return marked(this.project.readme)
+    }
+  },
+  methods: {
+    copySelected() {
+      navigator.clipboard.writeText(this.selectedVersion)
     }
   }
 }
