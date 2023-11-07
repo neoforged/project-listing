@@ -121,7 +121,7 @@
               :subtitle="commit.author.login"
           >
             <v-list-item-title>
-              <a :href="commit.commit.url" class="noSelect">{{ commit.commit.message }}</a>
+              <a :href="commit.commit.html_url" class="noSelect">{{ commit.commit.message }}</a>
             </v-list-item-title>
           </v-list-item>
         </v-list>
