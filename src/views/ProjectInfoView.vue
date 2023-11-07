@@ -187,6 +187,7 @@ export default {
     const bestLatestVersion = versions.find(e => !e.endsWith('-SNAPSHOT')) ?? versions[0]
 
     const readme = await fetch(`https://raw.githubusercontent.com/${org}/${repo}/${project.default_branch}/README.md`).then(res => res.text())
+        .then(text => text == '404: Not Found' ? '*No readme available*' : text)
         .catch(() => "*No readme available*")
 
     const commits = await fetch(`https://api.github.com/repos/${org}/${repo}/commits`).then(res => res.json())
