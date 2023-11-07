@@ -33,7 +33,7 @@
             <div v-if="project.license">
               License: <code>{{ project.license.name }}</code>
             </div>
-            <div v-if="project.topics">
+            <div v-if="project.topics.length > 0">
               Topics:
               <v-chip
                   class="ma-2"
