@@ -11,7 +11,7 @@
           <v-card class="mx-auto" :title="data[repo].name">
             <template v-slot:append>
               <Suspense>
-                <RepoStar :repo="repo" />
+                <RepoChips :repo="repo" />
               </Suspense>
             </template>
             <v-card-item>
@@ -31,11 +31,11 @@
 
 <script lang="ts">
 import json from "../../src/repos.json";
-import RepoStar from "@/components/project/RepoStar.vue";
+import RepoChips from "@/components/project/RepoChips.vue";
 import RepoDescription from "@/components/project/RepoDescription.vue";
 
 export default {
-  components: {RepoStar, RepoDescription},
+  components: {RepoChips, RepoDescription},
   data() {
     return {
       data: json
