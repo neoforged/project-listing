@@ -47,7 +47,7 @@ if (Files.readString(outPath).trim() != asString.trim()) {
     println("JSON file updated; running git commands")
     new ProcessBuilder('git', 'add', 'src/repos.json')
         .inheritIO().start().waitFor()
-    new ProcessBuilder('git', 'commit', '-M', 'Update repos json')
+    new ProcessBuilder('git', 'commit', '-m', 'Update repos json')
         .inheritIO().start().waitFor()
     new ProcessBuilder('git', 'push')
         .inheritIO().start().waitFor()
