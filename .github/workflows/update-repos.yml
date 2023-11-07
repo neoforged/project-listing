@@ -1,4 +1,4 @@
-name: Add repository secrets
+name: Update repositories JSON
 
 on:
   workflow_dispatch:
@@ -25,7 +25,7 @@ jobs:
           installation_id: 40772190
       - name: Checkout repository
         uses: actions/checkout@main
-      - name: Add secrets
+      - name: Update repositories JSON
         run: groovy .github/workflows/scripts/update_repos.groovy
         env:
           AUTH_TOKEN: ${{ steps.gen_repo_token.outputs.token }}

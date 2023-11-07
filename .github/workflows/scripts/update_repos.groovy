@@ -45,7 +45,10 @@ final asString = new JsonGenerator.Options().build().toJson(repos)
 if (Files.readString(outPath).trim() != asString.trim()) {
     Files.writeString(outPath, asString)
     println("JSON file updated; running git commands")
-    Runtime.getRuntime().exec(new String[] { 'git', 'add', 'src/repos.json' }).waitFor()
-    Runtime.getRuntime().exec(new String[] { 'git', 'commit', '-M', 'Update repos json' }).waitFor()
-    Runtime.getRuntime().exec(new String[] { 'git', 'push' }).waitFor()
+    new ProcessBuilder('git', 'add', 'src/repos.json')
+        .inheritIO().start().waitFor()
+    new ProcessBuilder('git', 'commit', '-M', 'Update repos json')
+        .inheritIO().start().waitFor()
+    new ProcessBuilder('git', 'push')
+        .inheritIO().start().waitFor()
 }
