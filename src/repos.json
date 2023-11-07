@@ -1,12 +1,1 @@
-{
-    "neoforged/eclipselaunchconfigs": {
-        "artifact": "net.neoforged:EclipseLaunchConfigs",
-        "name": "EclipseLaunchConfigs",
-        "default_branch": "main"
-    },
-    "neoforged/gradleutils": {
-        "artifact": "net.neoforged.gradleutils:GradleUtils",
-        "name": "GradleUtils",
-        "default_branch": "main"
-    }
-}
+{"neoforged/javadoctor":{"artifact":"net.neoforged.javadoctor:collector","name":"Javadoctor","default_branch":"main"}}
