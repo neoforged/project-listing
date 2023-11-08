@@ -34,7 +34,7 @@ static String findProperty(CustomProperty[] properties, String name) {
         final actualUrl = "https://gist.githubusercontent.com/${parts[0]}/${parts[1]}/raw/${parts[2]}"
         return new String(URI.create(actualUrl).toURL().openStream().readAllBytes(), StandardCharsets.UTF_8)
     }
-    return null
+    return prop
 }
 
 final repos = [:]
