@@ -1,7 +1,7 @@
 <template>
   <v-container class="fill-height" v-if="!error">
     <v-responsive class="text-center fill-height">
-      <v-breadcrumbs :items="[project.owner.login, project.name]">
+      <v-breadcrumbs :items="[{title: project.owner.login, disabled: false, href: '/'}, project.name]">
         <template v-slot:divider>
           <v-icon icon="mdi-chevron-right"></v-icon>
         </template>
