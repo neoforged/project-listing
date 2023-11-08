@@ -3,8 +3,10 @@ import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.stream.Collectors
 import java.util.stream.Stream
 
 @GrabResolver(name = 'central', root='https://repo1.maven.org/maven2/')
@@ -25,16 +27,30 @@ static CustomProperty[] getCustomProperties(GHRepository repo) {
     repo.root().createRequest().withUrlPath('/repos/' + repo.fullName + '/properties/values').fetch(CustomProperty[])
 }
 
+static String findProperty(CustomProperty[] properties, String name) {
+    final prop = properties.find({ it.property_name == name })?.value
+    if (prop?.startsWith('gist:')) {
+        final parts = prop.replace('gist:', '').split('/')
+        final actualUrl = "https://gist.githubusercontent.com/${parts[0]}/${parts[1]}/raw/${parts[2]}"
+        return new String(URI.create(actualUrl).toURL().openStream().readAllBytes(), StandardCharsets.UTF_8)
+    }
+    return null
+}
+
 final repos = [:]
 
 gh.getOrganization('neoforged').repositories.forEach { name, repo ->
     final properties = getCustomProperties(repo)
-    final artifact = Stream.of(properties).filter { it.property_name == 'ArtifactID' }.findFirst().orElse(null)?.value
+    final artifact = findProperty(properties, 'ArtifactID')
     if (artifact) {
         repos[repo.fullName.toLowerCase(Locale.ROOT)] = [
                 artifact: artifact,
                 name: repo.name,
-                default_branch: repo.defaultBranch
+                default_branch: repo.defaultBranch,
+                version_pattern: findProperty(properties, 'ProjectListing_VersionPattern'),
+                version_display_pattern: findProperty(properties, 'ProjectListing_VersionDisplayPattern')?.split(',')
+                    ?.toList()?.stream()?.map { it.split(':') }?.collect(Collectors.toMap({ it[0].trim() }, { it[1].trim() })) ?: [:],
+                download_url_pattern: findProperty(properties, 'ProjectListing_DownloadURLPattern')
         ]
         println("Found repository ${repo.fullName} with declared artifact ID: $artifact")
     }

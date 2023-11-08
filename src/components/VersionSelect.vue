@@ -7,7 +7,7 @@
               v-model="selectedItem[index]" density="compact"
               :disabled="!isEnabled(index)" @update:modelValue="onUpdate(index, $event)">
       <template v-slot:append-inner
-                v-if="selectedItem[index] == bestLatestVersions[index] || selectedItem[index]?.endsWith('-SNAPSHOT')">
+                v-if="selectedItem[index] == bestLatestVersions[index] && bestLatestVersions[index] != null || selectedItem[index]?.endsWith('-SNAPSHOT')">
         <div class="text-center">
           <LatestChip v-if="selectedItem[index] == bestLatestVersions[index]"/>
           <UnstableChip v-if="selectedItem[index]?.endsWith('-SNAPSHOT')"/>

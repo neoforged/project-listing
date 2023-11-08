@@ -134,7 +134,7 @@
 <script lang="ts">
 import json from "../../src/repos.json";
 import {useRoute} from "vue-router";
-import {marked} from "marked";
+import {marked} from "@/main";
 import VersionSelect from "@/components/VersionSelect.vue";
 
 export default {
@@ -181,9 +181,30 @@ export default {
         .then(res => res.status == 200)
         .catch(() => false)
 
-    const readme = await fetch(`https://raw.githubusercontent.com/${org}/${repo}/${project.default_branch}/README.md`).then(res => res.text())
-        .then(text => text == '404: Not Found' ? '*No readme available*' : text)
-        .catch(() => "*No readme available*")
+    const readme = await fetch(`https://raw.githubusercontent.com/${org}/${repo}/${project.default_branch}/README.md`)
+        .then(res => res.text())
+        .then(txt => {
+          return {
+            readme: txt,
+            dir: ''
+          }
+        })
+        .then(text => text.readme == '404: Not Found' ? fetch(`https://raw.githubusercontent.com/${org}/${repo}/${project.default_branch}/docs/README.md`).then(res => res.text()).then(res => {
+          return {
+            readme: res,
+            dir: 'docs/'
+          }
+        }) : text)
+        .then(text => text.readme == '404: Not Found' ? {
+          readme: '*No readme available*',
+          dir: ''
+        } : text)
+        .catch(() => {
+          return {
+            readme: "*No readme available*",
+            dir: ''
+          }
+        })
 
     const commits = await fetch(`https://api.github.com/repos/${org}/${repo}/commits`).then(res => res.json())
         .then(res => res as object[])
@@ -191,9 +212,10 @@ export default {
 
     return {
       mavenPath: mavenPath,
-      downloadUrlPattern: project.download_url_pattern ?? 'https://maven.neoforged.net/releases/${mavenPath}/${version}/${artifactName}-${version}.jar',
+      downloadUrlPattern: project.download_url_pattern ?? '$maven/$mavenPath/$version/$artifactName-$version.jar',
       project: {
         owner: proj.owner,
+        defaultBranch: project.default_branch,
         path: 'neoforged/' + repo,
         url: `https://github.com/${org}/${repo}`,
         artifact: project.artifact,
@@ -223,13 +245,13 @@ export default {
   },
   computed: {
     markdownToHtml() {
-      return marked(this.project.readme)
+      return marked(`https://github.com/${this.project!.path}/raw/${this.project.defaultBranch}/${this.project!.readme.dir}`).parse(this.project.readme.readme)
     }
   },
   methods: {
     computeDownloadUrl() {
-      return this.downloadUrlPattern!.replace('${mavenPath}', this.mavenPath)
-          .replaceAll('${version}', this.selectedVersion).replace('${artifactName}', this.project!.artifactName)
+      return this.downloadUrlPattern!.replace('$mavenPath', this.mavenPath).replace('$maven', 'https://maven.neoforged.net/releases')
+          .replaceAll('$version', this.selectedVersion).replace('$artifactName', this.project!.artifactName)
     },
     computeChangelogUrl(version: string): string | undefined {
       if (!version) {
