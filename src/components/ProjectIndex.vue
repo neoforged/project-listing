@@ -20,7 +20,7 @@
               </Suspense>
             </v-card-item>
             <v-card-actions>
-              <v-btn :href="`/project/${repo}`">Details</v-btn>
+              <v-btn :href="`/${repo}`">Details</v-btn>
             </v-card-actions>
           </v-card>
         </v-col>

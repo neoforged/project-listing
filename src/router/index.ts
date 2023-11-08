@@ -17,11 +17,11 @@ const routes = [
         ],
     },
     {
-        path: '/project/:org/',
+        path: '/:org/:name/',
         component: () => import('@/layouts/default/Default.vue'),
         children: [
             {
-                path: ':name',
+                path: '',
                 name: 'Project',
                 // route level code-splitting
                 // this generates a separate chunk (about.[hash].js) for this route
