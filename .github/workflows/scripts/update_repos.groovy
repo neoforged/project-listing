@@ -1,4 +1,6 @@
+import com.fasterxml.jackson.databind.JsonNode
 import groovy.json.JsonGenerator
+import groovy.transform.ImmutableOptions
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -7,7 +9,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.stream.Collectors
-import java.util.stream.Stream
+import java.util.stream.StreamSupport
 
 @GrabResolver(name = 'central', root='https://repo1.maven.org/maven2/')
 @Grapes([
@@ -37,27 +39,72 @@ static String findProperty(CustomProperty[] properties, String name) {
     return prop
 }
 
-final repos = [:]
+static JsonNode graphQl(GitHub gitHub, String query, Object... args) throws IOException {
+    return gitHub.createRequest()
+            .method("POST")
+            .inBody()
+            .with("query", query.formatted(args))
+            .withUrlPath("/graphql")
+            .fetch(JsonNode.class);
+}
+
+final pinned = StreamSupport.stream(graphQl(gh, """
+{
+  organization(login: "%s") {
+    pinnedItems(first: 6, types: REPOSITORY) {
+      nodes {
+        ... on Repository {
+          name
+        }
+      }
+    }
+  }
+}""", 'neoforged').get('data').get('organization').get('pinnedItems').get('nodes').spliterator(), false)
+    .map { it.get('name').textValue() }.toList()
+
+@ImmutableOptions(knownImmutableClasses = Map)
+record RepoInfo(String name, String fullName, Map info) {}
+
+final repos = [] as List<RepoInfo>
 
 gh.getOrganization('neoforged').repositories.forEach { name, repo ->
     final properties = getCustomProperties(repo)
     final artifact = findProperty(properties, 'ArtifactID')
     if (artifact) {
-        repos[repo.fullName.toLowerCase(Locale.ROOT)] = [
-                artifact: artifact,
-                name: repo.name,
-                default_branch: repo.defaultBranch,
-                version_pattern: findProperty(properties, 'ProjectListing_VersionPattern'),
-                version_display_pattern: findProperty(properties, 'ProjectListing_VersionDisplayPattern')?.split(',')
-                    ?.toList()?.stream()?.map { it.split(':') }?.collect(Collectors.toMap({ it[0].trim() }, { it[1].trim() })) ?: [:],
-                download_url_pattern: findProperty(properties, 'ProjectListing_DownloadURLPattern')
-        ]
+        repos.add(new RepoInfo(
+                repo.name,
+                repo.fullName.toLowerCase(Locale.ROOT),
+                [
+                        artifact: artifact,
+                        name: repo.name,
+                        default_branch: repo.defaultBranch,
+                        version_pattern: findProperty(properties, 'ProjectListing_VersionPattern'),
+                        version_display_pattern: findProperty(properties, 'ProjectListing_VersionDisplayPattern')?.split(',')
+                                ?.toList()?.stream()?.map { it.split(':') }?.collect(Collectors.toMap({ it[0].trim() }, { it[1].trim() })) ?: [:],
+                        download_url_pattern: findProperty(properties, 'ProjectListing_DownloadURLPattern')
+                ]
+        ))
         println("Found repository ${repo.fullName} with declared artifact ID: $artifact")
     }
 }
 
+final repoMap = [:]
+
+pinned.forEach { pin ->
+    repos.find { it.name() == pin }?.tap {
+        repoMap[it.fullName()] = it.info()
+        repos.remove(it)
+    }
+}
+repos.sort {
+    it.name() <=> it.name()
+}
+repos.forEach { repo ->
+    repoMap[repo.fullName()] = repo.info()
+}
+
 final outPath = Path.of('src/repos.json')
-final asString = new JsonGenerator.Options().build().toJson(repos)
+final asString = new JsonGenerator.Options().build().toJson(repoMap)
 if (Files.readString(outPath).trim() != asString.trim()) {
     Files.writeString(outPath, asString)
     println("JSON file updated; running git commands")
