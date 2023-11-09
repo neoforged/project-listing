@@ -7,7 +7,7 @@
         </template>
       </v-breadcrumbs>
       <v-row no-gutters>
-        <v-col>
+        <v-col align-self="center">
           <div>
             <h2>{{ project!.name }}</h2>
             <v-chip
