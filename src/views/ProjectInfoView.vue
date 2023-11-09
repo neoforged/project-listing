@@ -325,21 +325,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.noSelect {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  color: inherit;
-  text-decoration: inherit;
-}
-
-.noSelect:focus {
-  outline: none !important;
-}
-</style>

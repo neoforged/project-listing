@@ -20,6 +20,8 @@ import {markedHighlight} from "marked-highlight";
 import * as hljs from "highlight.js";
 
 import 'highlight.js/styles/github-dark.css';
+import '@/styles/style.css';
+
 import {baseUrl} from "marked-base-url";
 
 const app = createApp(App)
