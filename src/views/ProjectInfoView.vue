@@ -1,7 +1,7 @@
 <template>
   <v-container class="fill-height" v-if="!error">
     <v-responsive class="text-center fill-height">
-      <v-breadcrumbs :items="[{title: project.owner.login, disabled: false, href: '/'}, project.name]">
+      <v-breadcrumbs :items="[{title: project!.owner.login, disabled: false, href: '/'}, project!.name]">
         <template v-slot:divider>
           <v-icon icon="mdi-chevron-right"></v-icon>
         </template>
@@ -9,12 +9,12 @@
       <v-row no-gutters>
         <v-col>
           <div>
-            <h2>{{ project.name }}</h2>
+            <h2>{{ project!.name }}</h2>
             <v-chip
                 class="ma-2"
                 color="yellow"
                 variant="outlined"
-                v-if="externalSources.central"
+                v-if="externalSources!.central"
             >
               <v-icon start icon="mdi-check-circle"></v-icon>
               Available on Maven Central
@@ -23,33 +23,33 @@
                 class="ma-2"
                 color="cyan"
                 variant="outlined"
-                v-if="externalSources.gpp"
+                v-if="externalSources!.gpp"
             >
               <v-icon start icon="mdi-check-circle"></v-icon>
               Available on the Gradle Plugin Portal
             </v-chip>
             <div>
-              Repository: <a :href="project.url">{{ project.path }}</a>
+              Repository: <a :href="project!.url">{{ project!.path }}</a>
             </div>
             <div>
-              Artifact: <code>{{ project.artifact }}</code>
+              Artifact: <code>{{ project!.artifact }}</code>
             </div>
-            <div v-if="project.license">
-              License: <code>{{ project.license.name }}</code>
+            <div v-if="project!.license">
+              License: <code>{{ project!.license.name }}</code>
             </div>
-            <div v-if="project.topics.length > 0">
+            <div v-if="project!.topics.length > 0">
               Topics:
               <v-chip
                   class="ma-2"
                   color="blue"
                   variant="outlined"
-                  v-for="topic in project.topics"
+                  v-for="topic in project!.topics"
                   :key="topic"
               >{{ topic }}
               </v-chip>
             </div>
             <div><i>
-              {{ project.description }}
+              {{ project!.description }}
             </i></div>
           </div>
         </v-col>
@@ -63,7 +63,7 @@
                     <v-tooltip text="Copy to clipboard">
                       <template v-slot:activator="{ props }">
                         <v-btn density="comfortable" icon="mdi-content-copy" :disabled="!selectedVersion" v-bind="props"
-                               v-on:click="this.copySelected()"/>
+                               v-on:click="copySelected()"/>
                       </template>
                     </v-tooltip>
                   </v-col>
@@ -91,7 +91,7 @@
                              :pattern="versionPattern"
                              :display-pattern="versionDisplayPattern"
                              @update:modelValue="updateVersion($event)"
-                             :errors="errors.failedVersions"/>
+                             :errors="errors!.failedVersions"/>
             </v-card-text>
           </v-card>
         </v-col>
@@ -136,6 +136,47 @@ import json from "../../src/repos.json";
 import {useRoute} from "vue-router";
 import {marked} from "@/main";
 import VersionSelect from "@/components/VersionSelect.vue";
+import {Commit, getRepoCommits, getRepoInfo, License, User} from "@/scripts/githubAPI";
+
+interface Project {
+  owner: User
+  defaultBranch: string
+  path: string
+  url: string
+  artifact: string
+  artifactName: string
+  name: string
+  description: string
+  topics: string[]
+  license: License
+  readme: {
+    readme: string
+    dir: string
+  }
+}
+
+interface ExternalSources {
+  central: boolean
+  gpp: boolean
+}
+
+interface ComponentData {
+  mavenPath?: string
+  downloadUrlPattern?: string
+  project?: Project
+
+  error: string | null
+  errors?: {
+    failedVersions: boolean
+  }
+
+  versions?: string[]
+  versionPattern?: string
+  versionDisplayPattern?: string
+  commits?: Commit[]
+
+  externalSources?: ExternalSources
+}
 
 export default {
   components: {VersionSelect},
@@ -154,12 +195,12 @@ export default {
     if (!project) {
       return {
         error: 'Not Found'
-      }
+      } as ComponentData
     }
 
     let failedVersions = false
 
-    const proj = await fetch(`https://api.github.com/repos/${org}/${repo}`).then(res => res.json());
+    const proj = await getRepoInfo(`${org}/${repo}`);
 
     const mavenPath = project.artifact.replace(/\./g, '/').replace(':', '/')
 
@@ -206,8 +247,7 @@ export default {
           }
         })
 
-    const commits = await fetch(`https://api.github.com/repos/${org}/${repo}/commits`).then(res => res.json())
-        .then(res => res as object[])
+    const commits = await getRepoCommits(`${org}/${repo}`)
         .then(res => res.slice(0, 10))
 
     return {
@@ -218,7 +258,7 @@ export default {
         defaultBranch: project.default_branch,
         path: 'neoforged/' + repo,
         url: `https://github.com/${org}/${repo}`,
-        artifact: project.artifact,
+        artifact: project.artifact as string,
         artifactName: project.artifact.split(':')[1],
         name: project.name,
         description: proj.description,
@@ -235,22 +275,22 @@ export default {
         failedVersions: failedVersions
       },
 
-      error: null,
-
       externalSources: {
         central: isOnCentral,
         gpp: isOnGPP
-      }
-    };
+      },
+
+      error: null
+    } as ComponentData;
   },
   computed: {
     markdownToHtml() {
-      return marked(`https://github.com/${this.project!.path}/raw/${this.project.defaultBranch}/${this.project!.readme.dir}`).parse(this.project.readme.readme)
+      return marked(`https://github.com/${this.project!.path}/raw/${this.project!.defaultBranch}/${this.project!.readme.dir}`).parse(this.project!.readme.readme)
     }
   },
   methods: {
     computeDownloadUrl() {
-      return this.downloadUrlPattern!.replace('$mavenPath', this.mavenPath).replace('$maven', 'https://maven.neoforged.net/releases')
+      return this.downloadUrlPattern!.replace('$mavenPath', this.mavenPath!).replace('$maven', 'https://maven.neoforged.net/releases')
           .replaceAll('$version', this.selectedVersion).replace('$artifactName', this.project!.artifactName)
     },
     computeChangelogUrl(version: string): string | undefined {

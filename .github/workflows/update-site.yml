@@ -1,4 +1,4 @@
-name: Update repositories JSON
+name: Update site
 
 on:
   workflow_dispatch:
@@ -33,3 +33,22 @@ jobs:
         run: groovy .github/workflows/scripts/update_repos.groovy
         env:
           AUTH_TOKEN: ${{ steps.gen_repo_token.outputs.token }}
+
+      - uses: actions/setup-node@v3
+        name: Setup Node
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install deps
+        run: npm install
+      - name: Build site
+        run: npm run build
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: 'project-listing-v2'
+          directory: dist
+          # Enable Wrangler v3
+          wranglerVersion: '3'

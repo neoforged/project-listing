@@ -18,9 +18,11 @@
 </template>
 
 <script lang="ts">
+import {getRepoInfo} from "@/scripts/githubAPI";
+
 export default {
   async setup(params) {
-    const response = await fetch(`https://api.github.com/repos/${params.repo}`).then(res => res.json())
+    const response = await getRepoInfo(params.repo!)
     return {
       amount: response.stargazers_count as number,
       isFork: response.fork as boolean

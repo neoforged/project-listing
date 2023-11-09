@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.databind.JsonNode
 import groovy.json.JsonGenerator
+import groovy.json.JsonSlurper
 import groovy.transform.ImmutableOptions
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GitHub
@@ -115,3 +116,22 @@ if (Files.readString(outPath).trim() != asString.trim()) {
     new ProcessBuilder('git', 'push')
         .inheritIO().start().waitFor()
 }
+
+final readJson = { String uri ->
+    final connection = URI.create(uri).toURL().openConnection()
+    connection.addRequestProperty('Accept', 'application/json')
+    connection.addRequestProperty('Authorization', gh.client.authorizationProvider.encodedAuthorization)
+    connection.connect()
+    connection.getInputStream().withCloseable {
+        new JsonSlurper().parse(it.readAllBytes())
+    }
+}
+
+final repoInfo = [:]
+repoMap.keySet().forEach { key ->
+    repoInfo[key] = [
+        info: readJson("https://api.github.com/repos/${key}"),
+        commits: readJson("https://api.github.com/repos/${key}/commits?per_page=10")
+    ]
+}
+Files.writeString(Path.of('src/repoInfo.json'), new JsonGenerator.Options().build().toJson(repoInfo))
