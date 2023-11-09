@@ -2,7 +2,7 @@
   <v-select v-if="errors" :items="[]" disabled="true" label="Could not query versions"/>
   <template v-for="(group, index) in topLevelGroups" :key="index">
     <v-select :items="possibleItems[index]" :item-value="item => item"
-              :item-title="item => displayPattern[group]?.replace('${version}', item) ?? item"
+              :item-title="item => versionDisplay(item, group, index)"
               :label="group.replace('_', ' ')"
               v-model="selectedItem[index]" density="compact"
               :disabled="!isEnabled(index)" @update:modelValue="onUpdate(index, $event)">
@@ -107,7 +107,7 @@ export default {
     onUpdate(index: number, newValue: string) {
       let currentSubTree: Value = this.versionTree
       for (let i = 0; i < index; i++) {
-        currentSubTree = currentSubTree.children.get(this.selectedItem[i])
+        currentSubTree = currentSubTree.children.get(this.selectedItem[i])!
       }
       for (let i = index + 1; i < this.topLevelGroups.length; i++) {
         this.selectedItem[i] = undefined
@@ -129,6 +129,18 @@ export default {
         this.$emit('update:modelValue', null);
       }
     },
+
+    versionDisplay(version: string, group: string, index: number): string {
+      let customDisplay = this.displayPattern[group]
+      if (customDisplay) {
+        customDisplay = customDisplay.replace('${version}', version)
+        for (let i = 0; i < index; i++) {
+          customDisplay = customDisplay.replace('${version.' + this.topLevelGroups[index] + '}', this.selectedItem[i])
+        }
+        return customDisplay
+      }
+      return version
+    }
   },
   props: ['versions', 'pattern', 'displayPattern', 'modelValue', 'errors'],
   emits: ['update:modelValue']
