@@ -2,7 +2,7 @@
   <v-select v-if="errors" :items="[]" disabled="true" label="Could not query versions"/>
   <template v-for="(group, index) in topLevelGroups" :key="index">
     <v-select :items="possibleItems[index]" :item-value="item => item"
-              :item-title="item => versionDisplay(item, group, index)"
+              :item-title="item => versionDisplay(item.toString(), group, index)"
               :label="group.replace('_', ' ')"
               v-model="selectedItem[index]" density="compact"
               :disabled="!isEnabled(index)" @update:modelValue="onUpdate(index, $event)">
@@ -135,7 +135,7 @@ export default {
       if (customDisplay) {
         customDisplay = customDisplay.replace('${version}', version)
         for (let i = 0; i < index; i++) {
-          customDisplay = customDisplay.replace('${version.' + this.topLevelGroups[index] + '}', this.selectedItem[i])
+          customDisplay = customDisplay.replace('${version.' + this.topLevelGroups[i] + '}', this.selectedItem[i])
         }
         return customDisplay
       }
