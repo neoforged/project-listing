@@ -40,18 +40,18 @@ static String findProperty(CustomProperty[] properties, String name) {
     return prop
 }
 
-static JsonNode graphQl(GitHub gitHub, String query, Object... args) throws IOException {
+static JsonNode graphQl(GitHub gitHub, String query) throws IOException {
     return gitHub.createRequest()
             .method("POST")
             .inBody()
-            .with("query", query.formatted(args))
+            .with("query", query)
             .withUrlPath("/graphql")
             .fetch(JsonNode.class);
 }
 
 final pinned = StreamSupport.stream(graphQl(gh, """
 {
-  organization(login: "%s") {
+  organization(login: "neoforged") {
     pinnedItems(first: 6, types: REPOSITORY) {
       nodes {
         ... on Repository {
@@ -60,7 +60,7 @@ final pinned = StreamSupport.stream(graphQl(gh, """
       }
     }
   }
-}""", 'neoforged').get('data').get('organization').get('pinnedItems').get('nodes').spliterator(), false)
+}""").get('data').get('organization').get('pinnedItems').get('nodes').spliterator(), false)
     .map { it.get('name').textValue() }.toList()
 
 @ImmutableOptions(knownImmutableClasses = Map)
