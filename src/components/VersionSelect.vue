@@ -132,25 +132,22 @@ export default {
       for (let i = 0; i < index; i++) {
         currentSubTree = currentSubTree.children.get(this.selectedItem[i])!
       }
+      currentSubTree = currentSubTree.children.get(newValue)!;
       for (let i = index + 1; i < this.topLevelGroups.length; i++) {
-        this.selectedItem[i] = undefined
         const pos = this.possibleItems[i]
         pos.length = 0
-        if (i == index + 1) {
-          for (let key of currentSubTree.children.get(newValue)!.children.keys()) {
-            pos.push(key)
-          }
+        for (let key of currentSubTree.children.keys()) {
+          pos.push(key)
         }
-        this.bestLatestVersions[i] = calculateBestLatest(pos)
+        const best = calculateBestLatest(pos)
+        this.bestLatestVersions[i] = best
+        this.selectedItem[i] = best
         pos.update()
+        currentSubTree = currentSubTree.children.get(best)!
       }
       this.selectedItem.update()
 
-      if (index == this.topLevelGroups.length - 1) {
-        this.$emit('update:modelValue', currentSubTree.children.get(newValue)!.children.get('full')!.name)
-      } else if (this.modelValue) {
-        this.$emit('update:modelValue', null);
-      }
+      this.$emit('update:modelValue', currentSubTree.children.get('full')!.name)
     },
 
     versionDisplay(version: string, group: string, index: number): string {
