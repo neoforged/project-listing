@@ -87,12 +87,28 @@ export default {
     const bestLatestVersions = new Array<string>(topLevelGroups.length);
     bestLatestVersions[0] = calculateBestLatest(possibleItems[0])
 
+    const selectedItem = reactive(new Reactive(topLevelGroups.length));
+
+    selectedItem[0] = bestLatestVersions[0]
+
+    let currentSubTree: Value = versionTree.children.get(selectedItem[0])!
+    for (let i = 1; i < topLevelGroups.length; i++) {
+      const pos = possibleItems[i]
+      pos.length = 0
+      for (let key of currentSubTree.children.keys()) {
+        pos.push(key)
+      }
+      selectedItem[i] = calculateBestLatest(pos)
+      bestLatestVersions[i] = selectedItem[i]
+      currentSubTree = currentSubTree.children.get(selectedItem[i])!
+    }
+
     return {
       topLevelGroups,
       versionTree,
       possibleItems,
       bestLatestVersions,
-      selectedItem: reactive(new Reactive(topLevelGroups.length))
+      selectedItem
     }
   },
   methods: {
