@@ -108,9 +108,16 @@ export default {
       versionTree,
       possibleItems,
       bestLatestVersions,
-      selectedItem
+      selectedItem,
+
+      defaultValue: currentSubTree.children.get('full')!.name
     }
   },
+
+  mounted() {
+    this.$emit('update:modelValue', this.defaultValue);
+  },
+
   methods: {
     isEnabled(index: number) {
       for (let i = 0; i < index; i++) {
