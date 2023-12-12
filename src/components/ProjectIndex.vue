@@ -8,7 +8,7 @@
 
       <v-row class="d-flex align-center justify-center">
         <v-col v-for="repo in Object.keys(data)" :key="repo" cols="12" sm="5">
-          <v-card class="mx-auto" :title="data[repo].name">
+          <v-card class="mx-auto" :title="data[repo].name" :href="`/${repo}`">
             <template v-slot:append>
               <Suspense>
                 <RepoChips :repo="repo" />
