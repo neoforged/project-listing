@@ -60,14 +60,6 @@
               <v-container>
                 <v-row dense>
                   <v-col>
-                    <v-tooltip text="Copy to clipboard">
-                      <template v-slot:activator="{ props }">
-                        <v-btn density="comfortable" icon="mdi-content-copy" :disabled="!selectedVersion" v-bind="props"
-                               v-on:click="copySelected()"/>
-                      </template>
-                    </v-tooltip>
-                  </v-col>
-                  <v-col>
                     <v-tooltip text="Download">
                       <template v-slot:activator="{ props }">
                         <v-btn density="comfortable" icon="mdi-download" :disabled="!selectedVersion" v-bind="props"
@@ -76,9 +68,17 @@
                     </v-tooltip>
                   </v-col>
                   <v-col>
+                    <v-tooltip text="Copy version to clipboard">
+                      <template v-slot:activator="{ props }">
+                        <v-btn density="comfortable" icon="mdi-content-copy" :disabled="!selectedVersion" v-bind="props"
+                               v-on:click="copySelected()"/>
+                      </template>
+                    </v-tooltip>
+                  </v-col>
+                  <v-col>
                     <v-tooltip text="Changelog">
                       <template v-slot:activator="{ props }">
-                        <v-btn density="comfortable" icon="mdi-file-outline" :disabled="!displayChangelog"
+                        <v-btn density="comfortable" icon="mdi-clipboard-text-clock-outline" :disabled="!displayChangelog"
                                v-bind="props" :href="computeChangelogUrl(selectedVersion)"/>
                       </template>
                     </v-tooltip>

@@ -89,33 +89,34 @@ export default {
 
     const selectedItem = reactive(new Reactive(topLevelGroups.length));
 
-    selectedItem[0] = bestLatestVersions[0]
-
-    let currentSubTree: Value = versionTree.children.get(selectedItem[0])!
-    for (let i = 1; i < topLevelGroups.length; i++) {
-      const pos = possibleItems[i]
-      pos.length = 0
-      for (let key of currentSubTree.children.keys()) {
-        pos.push(key)
-      }
-      selectedItem[i] = calculateBestLatest(pos)
-      bestLatestVersions[i] = selectedItem[i]
-      currentSubTree = currentSubTree.children.get(selectedItem[i])!
-    }
-
     return {
       topLevelGroups,
       versionTree,
       possibleItems,
       bestLatestVersions,
-      selectedItem,
-
-      defaultValue: currentSubTree.children.get('full')!.name
+      selectedItem
     }
   },
 
   mounted() {
-    this.$emit('update:modelValue', this.defaultValue);
+    this.selectedItem[0] = this.bestLatestVersions[0]
+
+    let currentSubTree: Value = this.versionTree.children.get(this.selectedItem[0])!
+    for (let i = 1; i < this.topLevelGroups.length; i++) {
+      const pos = this.possibleItems[i]
+      pos.length = 0
+      for (let key of currentSubTree.children.keys()) {
+        pos.push(key)
+      }
+      this.selectedItem[i] = calculateBestLatest(pos)
+      this.bestLatestVersions[i] = this.selectedItem[i]
+      currentSubTree = currentSubTree.children.get(this.selectedItem[i])!
+
+      pos.update()
+    }
+    this.selectedItem.update()
+
+    this.$emit('update:modelValue', currentSubTree.children.get('full')!.name);
   },
 
   methods: {
