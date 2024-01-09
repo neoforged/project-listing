@@ -79,7 +79,7 @@
                     <v-tooltip text="Changelog">
                       <template v-slot:activator="{ props }">
                         <v-btn density="comfortable" icon="mdi-clipboard-text-clock-outline" :disabled="!displayChangelog"
-                               v-bind="props" :href="computeChangelogUrl(selectedVersion)"/>
+                               v-bind="props" :href="computeChangelogUrl(selectedVersion)" target="_blank"/>
                       </template>
                     </v-tooltip>
                   </v-col>
