@@ -18,7 +18,7 @@ jobs:
       - name: Setup Groovy
         uses: wtfjoke/setup-groovy@v1
         with:
-          groovy-version: '4.x'
+          groovy-version: '4.0.18'
       - name: Generate an Application repository access token
         id: gen_repo_token
         uses: kattecon/gh-app-access-token-gen@v1
