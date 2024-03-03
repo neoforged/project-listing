@@ -15,7 +15,8 @@ import java.util.stream.StreamSupport
 @GrabResolver(name = 'central', root='https://repo1.maven.org/maven2/')
 @Grapes([
         @Grab('org.apache.groovy:groovy-json:4.0.14'),
-        @Grab('org.kohsuke:github-api:1.313')
+        @Grab('org.kohsuke:github-api:1.313'),
+        @Grta('info.picocli:picocli:4.7.5')
 ])
 
 final GitHub gh = new GitHubBuilder()
