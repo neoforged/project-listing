@@ -16,7 +16,7 @@ import java.util.stream.StreamSupport
 @Grapes([
         @Grab('org.apache.groovy:groovy-json:4.0.14'),
         @Grab('org.kohsuke:github-api:1.313'),
-        @Grta('info.picocli:picocli:4.7.5')
+        @Grab('info.picocli:picocli:4.7.5')
 ])
 
 final GitHub gh = new GitHubBuilder()
