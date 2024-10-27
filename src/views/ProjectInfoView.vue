@@ -101,7 +101,7 @@
 
       <v-divider/>
 
-      <div v-html="markdownToHtml" style="text-align: start"/>
+      <div class="markdown-body" v-html="markdownToHtml" style="text-align: start"/>
 
       <v-divider/>
       <div class="py-2"/>
