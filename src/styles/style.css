@@ -24,6 +24,7 @@
 
     /* Change the background color to nothing */
     --bgColor-default: none;
+    background-color: transparent;
 }
 
 @media (max-width: 767px) {
