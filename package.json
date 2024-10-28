@@ -11,6 +11,7 @@
   "dependencies": {
     "@mdi/font": "7.0.96",
     "core-js": "^3.29.0",
+    "github-markdown-css": "^5.7.0",
     "highlight.js": "^11.9.0",
     "marked": "^9.1.5",
     "marked-base-url": "^1.1.0",
