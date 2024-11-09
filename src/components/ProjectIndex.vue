@@ -24,7 +24,7 @@
             <v-card-actions>
               <v-btn :href="`/${repo.projectRepo}`">Details</v-btn>
               <v-spacer></v-spacer>
-              <v-btn :href="`/${repo.projectRepo}`">{{ repo.latestVersion || 'N/A' }}</v-btn>
+              <p :href="`/${repo.projectRepo}`">{{ repo.latestVersion }}</p>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -49,9 +49,9 @@ export default {
         const projectInfo = json[project];
         const mavenPath = projectInfo.artifact.replace(/\./g, '/').replace(':', '/');
 
-        const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/${mavenPath}`)
+        const latestVersion = await fetch(`https://maven.neoforged.net/api/maven/latest/version/releases/${mavenPath}`)
           .then((res) => res.json())
-          .then((res) => res.versions.reverse())
+          .then((res) => res.version)
           .catch((err) => {
             console.error("Failed to fetch versions:", err);
             return [];
@@ -60,7 +60,7 @@ export default {
         return {
           ...projectInfo,
           projectRepo: project,
-          latestVersion: versions[0] || 'N/A',
+          latestVersion: latestVersion || '',
         };
       });
 
