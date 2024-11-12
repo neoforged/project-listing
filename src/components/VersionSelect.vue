@@ -29,6 +29,7 @@
 
 <script lang="ts">
 import {reactive} from "vue";
+import {useRoute} from "vue-router";
 
 type Value = {
   name: string,
@@ -99,6 +100,16 @@ export default {
   },
 
   mounted() {
+    const query = useRoute().query
+    Object.keys(query).forEach((value) => {
+      if (this.topLevelGroups[0].toLowerCase() == value.toLowerCase()) {
+        const val = query[value] as string;
+        if (this.versionTree.children.get(val) != null) {
+          this.bestLatestVersions[0] = val;
+        }
+      }
+    });
+
     this.selectedItem[0] = this.bestLatestVersions[0]
 
     let currentSubTree: Value = this.versionTree.children.get(this.selectedItem[0])!
