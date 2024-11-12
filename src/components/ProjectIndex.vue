@@ -23,8 +23,8 @@
 
             <v-card-actions>
               <v-btn :href="`/${repo.projectRepo}`">Details</v-btn>
-              <v-spacer></v-spacer>
-              <p :href="`/${repo.projectRepo}`">{{ repo.latestVersion }}</p>
+              <v-spacer v-if="repo.latestVersion"></v-spacer>
+              <p :href="`/${repo.projectRepo}`" v-if="repo.latestVersion">{{ repo.latestVersion }}</p>
             </v-card-actions>
           </v-card>
         </v-col>
