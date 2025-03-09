@@ -55,7 +55,7 @@
         </v-col>
 
         <v-col cols="12" md="5">
-          <v-card title="Recent Versions">
+          <v-card title="Select Version">
             <template v-slot:append>
               <v-container>
                 <v-row dense>
