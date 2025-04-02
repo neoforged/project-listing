@@ -55,6 +55,7 @@
         </v-col>
 
         <v-col cols="12" md="5">
+          <v-img v-if="isNeoForgeProject" width="100%" height="100px" src="../../src/assets/large_logo.png" />
           <v-card title="Select Version">
             <template v-slot:append>
               <v-container>
@@ -285,7 +286,16 @@ export default {
   },
   computed: {
     markdownToHtml() {
-      return marked(`https://github.com/${this.project!.path}/raw/${this.project!.defaultBranch}/${this.project!.readme.dir}`).parse(this.project!.readme.readme)
+      const readmeContent = marked(`https://github.com/${this.project!.path}/raw/${this.project!.defaultBranch}/${this.project!.readme.dir}`).parse(this.project!.readme.readme)
+      // Special handling to remove the NeoForge logo from the readme html because it was destracting users away from the download dropdowns. Too much visual noise at bottom of page. 
+      const elementToRemove = "<p><img src=\"https://github.com/neoforged/neoforge/raw/1.21.x/docs/assets/neoforged_logo.png\" alt=\"NeoForged Logo\"></p>"
+      if (typeof readmeContent === "string") {
+        return readmeContent.replace(elementToRemove, "")
+      }
+      return readmeContent.then(readmeHtml => readmeHtml.replace(elementToRemove, ""))
+    },
+    isNeoForgeProject() {
+      return this.project!.path === "neoforged/neoforge";
     }
   },
   methods: {
