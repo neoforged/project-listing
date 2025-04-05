@@ -55,9 +55,7 @@
         </v-col>
 
         <v-col cols="12" md="5">
-          <v-img v-if="getProjectLogo" width="100%" height="100px">
-            {{getProjectLogo}}
-          </v-img>
+          <v-img v-if="getProjectLogo" width="100%" height="100px" :src="getProjectLogo"/>
           <v-card title="Select Version">
             <template v-slot:append>
               <v-container>
@@ -260,8 +258,9 @@ export default {
     const elementToRemoveRegex = /<p><img src="https:\/\/github\.com\/[\w/.]+\/\w*logo\w*\.(png|svg)" alt="[\w ]+">\<\/p>/i
     const readmeContentPromise = marked(`https://github.com/${projectPath}/raw/${project.default_branch}/${readme.dir}`).parse(readme.readme)
     let readmeContent = typeof readmeContentPromise === "string" ? readmeContentPromise : await readmeContentPromise
-    const extractedLogo = (readmeContent.match(elementToRemoveRegex) ?? [""])[0]
-    readmeContent = readmeContent.replace(extractedLogo, "");
+    const extractedLogoElement = (readmeContent.match(elementToRemoveRegex) ?? [""])[0]
+    const extractedLogo = (extractedLogoElement.match(/https:\/\/github\.com\/[\w/.]+\/\w*logo\w*\.(png|svg)/i) ?? [""])[0]
+    readmeContent = readmeContent.replace(extractedLogoElement, "");
 
     return {
       mavenPath: mavenPath,
