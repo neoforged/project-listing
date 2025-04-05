@@ -39,6 +39,32 @@ import RepoChips from "@/components/project/RepoChips.vue";
 import RepoDescription from "@/components/project/RepoDescription.vue";
 import { ref, onMounted } from "vue";
 
+const fetchLatestVersionByXML = async (mavenPath: string) => {
+  return await fetch(`https://maven.neoforged.net/releases/${mavenPath}/maven-metadata.xml`)
+            .then((res) => res.text())
+            .then((res) => {
+              const parser = new DOMParser();
+              const xmlDoc = parser.parseFromString(res, "text/xml");
+              const latestElement =  xmlDoc.querySelector("latest");
+              const latestVersionString = latestElement?.textContent ?? "Unavailable";
+              return latestVersionString;
+            })
+            .catch((err) => {
+              console.error("Failed to fetch versions:", err);
+              return [];
+            });
+}
+
+const fetchLatestVersionByJSON = async (mavenPath: string) => {
+  return await fetch(`https://maven.neoforged.net/api/maven/latest/version/releases/${mavenPath}`)
+            .then((res) => res.json())
+            .then((res) => res.version)
+            .catch((err) => {
+              console.error("Failed to fetch versions:", err);
+              return [];
+            });
+}
+
 export default {
   components: {RepoChips, RepoDescription},
   async setup() {
@@ -49,13 +75,13 @@ export default {
         const projectInfo = json[project];
         const mavenPath = projectInfo.artifact.replace(/\./g, '/').replace(':', '/');
 
-        const latestVersion = await fetch(`https://maven.neoforged.net/api/maven/latest/version/releases/${mavenPath}`)
-          .then((res) => res.json())
-          .then((res) => res.version)
-          .catch((err) => {
-            console.error("Failed to fetch versions:", err);
-            return [];
-          });
+        let latestVersion;
+        if (mavenPath === "net/neoforged/fancymodloader/loader") {
+          latestVersion = await fetchLatestVersionByXML(mavenPath);
+        }
+        else {
+          latestVersion = await fetchLatestVersionByJSON(mavenPath);
+        }
 
         return {
           ...projectInfo,
