@@ -287,12 +287,12 @@ export default {
   computed: {
     markdownToHtml() {
       const readmeContent = marked(`https://github.com/${this.project!.path}/raw/${this.project!.defaultBranch}/${this.project!.readme.dir}`).parse(this.project!.readme.readme)
-      // Special handling to remove the NeoForge logo from the readme html because it was destracting users away from the download dropdowns. Too much visual noise at bottom of page. 
-      const elementToRemove = "<p><img src=\"https://github.com/neoforged/neoforge/raw/1.21.x/docs/assets/neoforged_logo.png\" alt=\"NeoForged Logo\"></p>"
+      // Special handling to remove the main logo from the readme html because it was destracting users away from the download dropdowns. Too much visual noise at bottom of page. 
+      const elementToRemoveRegex = /<p><img src="https:\/\/github\.com\/[\w/.]+\/\w*logo\w*\.(png|svg)" alt="[\w ]+">\<\/p>/i
       if (typeof readmeContent === "string") {
-        return readmeContent.replace(elementToRemove, "")
+        return readmeContent.replace(elementToRemoveRegex, "")
       }
-      return readmeContent.then(readmeHtml => readmeHtml.replace(elementToRemove, ""))
+      return readmeContent.then(readmeHtml => readmeHtml.replace(elementToRemoveRegex, ""))
     },
     isNeoForgeProject() {
       return this.project!.path === "neoforged/neoforge";
