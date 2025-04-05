@@ -55,7 +55,9 @@
         </v-col>
 
         <v-col cols="12" md="5">
-          <v-img v-if="isNeoForgeProject" width="100%" height="100px" src="../../src/assets/large_logo.png" />
+          <v-img v-if="getProjectLogo" width="100%" height="100px">
+            {{getProjectLogo}}
+          </v-img>
           <v-card title="Select Version">
             <template v-slot:append>
               <v-container>
@@ -170,7 +172,8 @@ interface ComponentData {
   errors?: {
     failedVersions: boolean
   }
-
+  htmlToRender: string
+  logoImage: string
   versions?: string[]
   versionPattern?: string
   versionDisplayPattern?: string
@@ -204,6 +207,8 @@ export default {
     const proj = await getRepoInfo(`${org}/${repo}`);
 
     const mavenPath = project.artifact.replace(/\./g, '/').replace(':', '/')
+
+    const projectPath =  'neoforged/' + repo;
 
     const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/` + mavenPath)
         .then(response => response.json())
@@ -251,13 +256,20 @@ export default {
     const commits = await getRepoCommits(`${org}/${repo}`)
         .then(res => res.slice(0, 10))
 
+    // Special handling to remove the main logo from the readme html because it was destracting users away from the download dropdowns. Too much visual noise at bottom of page. 
+    const elementToRemoveRegex = /<p><img src="https:\/\/github\.com\/[\w/.]+\/\w*logo\w*\.(png|svg)" alt="[\w ]+">\<\/p>/i
+    const readmeContentPromise = marked(`https://github.com/${projectPath}/raw/${project.default_branch}/${readme.dir}`).parse(readme.readme)
+    let readmeContent = typeof readmeContentPromise === "string" ? readmeContentPromise : await readmeContentPromise
+    const extractedLogo = (readmeContent.match(elementToRemoveRegex) ?? [""])[0]
+    readmeContent = readmeContent.replace(extractedLogo, "");
+
     return {
       mavenPath: mavenPath,
       downloadUrlPattern: project.download_url_pattern ?? '$maven/$mavenPath/$version/$artifactName-$version.jar',
       project: {
         owner: proj.owner,
         defaultBranch: project.default_branch,
-        path: 'neoforged/' + repo,
+        path: projectPath,
         url: `https://github.com/${org}/${repo}`,
         artifact: project.artifact as string,
         artifactName: project.artifact.split(':')[1],
@@ -271,6 +283,8 @@ export default {
       versionPattern: project.version_pattern ?? '(?<Version>.+)',
       versionDisplayPattern: project.version_display_pattern ?? {},
       commits: commits,
+      htmlToRender: readmeContent,
+      logoImage: extractedLogo,
 
       errors: {
         failedVersions: failedVersions
@@ -286,16 +300,10 @@ export default {
   },
   computed: {
     markdownToHtml() {
-      const readmeContent = marked(`https://github.com/${this.project!.path}/raw/${this.project!.defaultBranch}/${this.project!.readme.dir}`).parse(this.project!.readme.readme)
-      // Special handling to remove the main logo from the readme html because it was destracting users away from the download dropdowns. Too much visual noise at bottom of page. 
-      const elementToRemoveRegex = /<p><img src="https:\/\/github\.com\/[\w/.]+\/\w*logo\w*\.(png|svg)" alt="[\w ]+">\<\/p>/i
-      if (typeof readmeContent === "string") {
-        return readmeContent.replace(elementToRemoveRegex, "")
-      }
-      return readmeContent.then(readmeHtml => readmeHtml.replace(elementToRemoveRegex, ""))
+      return this.htmlToRender;
     },
-    isNeoForgeProject() {
-      return this.project!.path === "neoforged/neoforge";
+    getProjectLogo() {
+      return this.logoImage;
     }
   },
   methods: {
