@@ -75,13 +75,16 @@ export default {
         const projectInfo = json[project];
         const mavenPath = projectInfo.artifact.replace(/\./g, '/').replace(':', '/');
 
-        let latestVersion;
-        if (mavenPath === "net/neoforged/fancymodloader/loader") {
-          latestVersion = await fetchLatestVersionByXML(mavenPath);
-        }
-        else {
-          latestVersion = await fetchLatestVersionByJSON(mavenPath);
-        }
+        const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/` + mavenPath)
+          .then(response => response.json())
+          .then(res => res.versions as string[])
+          .then(versions => versions.filter((version) => !projectInfo.version_pattern || version.match(projectInfo.version_pattern)).reverse())
+          .catch(err => {
+            console.log('Failed to find versions: ' + err)
+            return []
+          });
+          
+        let latestVersion = versions.length > 0 ? versions[0] : "Unavailable";
 
         return {
           ...projectInfo,
