@@ -39,30 +39,29 @@ import RepoChips from "@/components/project/RepoChips.vue";
 import RepoDescription from "@/components/project/RepoDescription.vue";
 import { ref, onMounted } from "vue";
 
-const fetchLatestVersionByXML = async (mavenPath: string) => {
-  return await fetch(`https://maven.neoforged.net/releases/${mavenPath}/maven-metadata.xml`)
-            .then((res) => res.text())
-            .then((res) => {
-              const parser = new DOMParser();
-              const xmlDoc = parser.parseFromString(res, "text/xml");
-              const latestElement =  xmlDoc.querySelector("latest");
-              const latestVersionString = latestElement?.textContent ?? "Unavailable";
-              return latestVersionString;
-            })
-            .catch((err) => {
-              console.error("Failed to fetch versions:", err);
-              return [];
-            });
+const fetchLatestVersionByRegex = async (mavenPath: string, versionPattern: string) => {
+  const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/` + mavenPath)
+    .then(response => response.json())
+    .then(res => res.versions as string[])
+    .then(versions => versions.filter((version) => !versionPattern || version.match(versionPattern)).reverse())
+    .catch(err => {
+      console.log('Failed to find versions: ' + err)
+      return []
+    });
+    
+  return versions.length > 0 ? versions[0] : "Unavailable";
 }
 
-const fetchLatestVersionByJSON = async (mavenPath: string) => {
-  return await fetch(`https://maven.neoforged.net/api/maven/latest/version/releases/${mavenPath}`)
+const fetchLatestVersionByLatestAPI = async (mavenPath: string) => {
+  const latestVersion = await fetch(`https://maven.neoforged.net/api/maven/latest/version/releases/${mavenPath}`)
             .then((res) => res.json())
             .then((res) => res.version)
             .catch((err) => {
               console.error("Failed to fetch versions:", err);
               return [];
             });
+
+  return latestVersion ? latestVersion : "Unavailable";
 }
 
 export default {
@@ -75,16 +74,13 @@ export default {
         const projectInfo = json[project];
         const mavenPath = projectInfo.artifact.replace(/\./g, '/').replace(':', '/');
 
-        const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/` + mavenPath)
-          .then(response => response.json())
-          .then(res => res.versions as string[])
-          .then(versions => versions.filter((version) => !projectInfo.version_pattern || version.match(projectInfo.version_pattern)).reverse())
-          .catch(err => {
-            console.log('Failed to find versions: ' + err)
-            return []
-          });
-          
-        let latestVersion = versions.length > 0 ? versions[0] : "Unavailable";
+        let latestVersion;
+        if (projectInfo.version_pattern) {
+          latestVersion = await fetchLatestVersionByRegex(mavenPath, projectInfo.version_pattern);
+        }
+        else {
+          latestVersion = await fetchLatestVersionByLatestAPI(mavenPath);
+        }
 
         return {
           ...projectInfo,
