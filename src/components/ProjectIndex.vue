@@ -39,6 +39,31 @@ import RepoChips from "@/components/project/RepoChips.vue";
 import RepoDescription from "@/components/project/RepoDescription.vue";
 import { ref, onMounted } from "vue";
 
+const fetchLatestVersionByRegex = async (mavenPath: string, versionPattern: string) => {
+  const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/` + mavenPath)
+    .then(response => response.json())
+    .then(res => res.versions as string[])
+    .then(versions => versions.filter((version) => !versionPattern || version.match(versionPattern)).reverse())
+    .catch(err => {
+      console.log('Failed to find versions: ' + err)
+      return []
+    });
+    
+  return versions.length > 0 ? versions[0] : "Unavailable";
+}
+
+const fetchLatestVersionByLatestAPI = async (mavenPath: string) => {
+  const latestVersion = await fetch(`https://maven.neoforged.net/api/maven/latest/version/releases/${mavenPath}`)
+            .then((res) => res.json())
+            .then((res) => res.version)
+            .catch((err) => {
+              console.error("Failed to fetch versions:", err);
+              return [];
+            });
+
+  return latestVersion ? latestVersion : "Unavailable";
+}
+
 export default {
   components: {RepoChips, RepoDescription},
   async setup() {
@@ -49,13 +74,13 @@ export default {
         const projectInfo = json[project];
         const mavenPath = projectInfo.artifact.replace(/\./g, '/').replace(':', '/');
 
-        const latestVersion = await fetch(`https://maven.neoforged.net/api/maven/latest/version/releases/${mavenPath}`)
-          .then((res) => res.json())
-          .then((res) => res.version)
-          .catch((err) => {
-            console.error("Failed to fetch versions:", err);
-            return [];
-          });
+        let latestVersion;
+        if (projectInfo.version_pattern) {
+          latestVersion = await fetchLatestVersionByRegex(mavenPath, projectInfo.version_pattern);
+        }
+        else {
+          latestVersion = await fetchLatestVersionByLatestAPI(mavenPath);
+        }
 
         return {
           ...projectInfo,
