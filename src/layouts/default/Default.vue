@@ -23,6 +23,8 @@
         © 2023 — <a class="noSelect" href="https://github.com/NeoForged"><strong>NeoForged</strong></a>
         <br>
         Contribute on <a class="noSelect" href="https://github.com/NeoForged/project-listing">GitHub</a>
+        <br><br>
+        <p style="font-size: 50%;">NOT AN OFFICIAL MINECRAFT WEBSITE. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT</p>
       </div>
     </v-footer>
   </v-app>
