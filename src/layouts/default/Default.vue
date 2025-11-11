@@ -20,7 +20,7 @@
 
     <v-footer border>
       <div class="px-4 py-2 text-center w-100">
-        © 2023 — <a class="noSelect" href="https://github.com/NeoForged"><strong>NeoForged</strong></a>
+        © {{ new Date().getFullYear() }} — <a class="noSelect" href="https://github.com/NeoForged"><strong>NeoForged</strong></a>
         <br>
         Contribute on <a class="noSelect" href="https://github.com/NeoForged/project-listing">GitHub</a>
         <br><br>
