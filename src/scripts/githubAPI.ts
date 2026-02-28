@@ -6,7 +6,7 @@ async function getJson() {
         console.log(`Found repo info, using the cache.`)
         return res.default as object;
       })
-      .catch(err => {
+      .catch(_ => { // eslint-disable-line @typescript-eslint/no-unused-vars
         console.log(`Found no repo info json, using the API.`)
         return {} as object
       })
