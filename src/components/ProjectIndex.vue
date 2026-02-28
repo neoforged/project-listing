@@ -40,7 +40,7 @@ import RepoDescription from "@/components/project/RepoDescription.vue";
 import { ref, onMounted } from "vue";
 
 const fetchLatestVersionByRegex = async (mavenPath: string, versionPattern: string) => {
-  const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/` + mavenPath)
+  const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/${mavenPath}?sorted=false`)
     .then(response => response.json())
     .then(res => res.versions as string[])
     .then(versions => versions.filter((version) => !versionPattern || version.match(versionPattern)).reverse())
@@ -53,9 +53,13 @@ const fetchLatestVersionByRegex = async (mavenPath: string, versionPattern: stri
 }
 
 const fetchLatestVersionByLatestAPI = async (mavenPath: string) => {
-  const latestVersion = await fetch(`https://maven.neoforged.net/api/maven/latest/version/releases/${mavenPath}`)
-            .then((res) => res.json())
-            .then((res) => res.version)
+  // Reposilite 3.5.27 added the `sorted` parameter to the /versions/endpoint, to return versions as listed in the maven-metadata.xml
+  // Use /versions/ endpoint instead of /latest/version/ until the `sorted` parameter is added for the latter
+  const latestVersion = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/${mavenPath}?sorted=false`)
+        .then(response => response.json())
+        .then(res => res.versions as string[])
+        .then(versions => versions.reverse())
+        .then(versions => versions[0])
             .catch((err) => {
               console.error("Failed to fetch versions:", err);
               return [];

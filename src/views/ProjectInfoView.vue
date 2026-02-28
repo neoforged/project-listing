@@ -208,7 +208,8 @@ export default {
 
     const projectPath =  'neoforged/' + repo;
 
-    const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/` + mavenPath)
+    // Reposilite 3.5.27 adds a new query parameter 'sorted', with false meaning to list versions without sorting, as seen in the maven-metadata.xml
+    const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/${mavenPath}?sorted=false`)
         .then(response => response.json())
         .then(res => res.versions as string[])
         .then(versions => versions.reverse())
