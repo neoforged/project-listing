@@ -208,7 +208,8 @@ export default {
 
     const projectPath =  'neoforged/' + repo;
 
-    const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/` + mavenPath)
+    // Reposilite 3.5.27 adds a new query parameter 'sorted', with false meaning to list versions without sorting, as seen in the maven-metadata.xml
+    const versions = await fetch(`https://maven.neoforged.net/api/maven/versions/releases/${mavenPath}?sorted=false`)
         .then(response => response.json())
         .then(res => res.versions as string[])
         .then(versions => versions.reverse())
@@ -255,7 +256,7 @@ export default {
         .then(res => res.slice(0, 10))
 
     // Special handling to remove the main logo from the readme html because it was destracting users away from the download dropdowns. Too much visual noise at bottom of page. 
-    const elementToRemoveRegex = /<p><img src="https:\/\/github\.com\/[\w/.]+\/\w*logo\w*\.(png|svg)" alt="[\w ]+">\<\/p>/i
+    const elementToRemoveRegex = /<p><img src="https:\/\/github\.com\/[\w/.]+\/\w*logo\w*\.(png|svg)" alt="[\w ]+"><\/p>/i
     const readmeContentPromise = marked(`https://github.com/${projectPath}/raw/${project.default_branch}/${readme.dir}`).parse(readme.readme)
     let readmeContent = typeof readmeContentPromise === "string" ? readmeContentPromise : await readmeContentPromise
     const extractedLogoElement = (readmeContent.match(elementToRemoveRegex) ?? [""])[0]
@@ -323,7 +324,7 @@ export default {
             .then(res => {
               this.displayChangelog = res.status == 200;
             })
-            .catch(err => this.displayChangelog = false);
+            .catch(_ => this.displayChangelog = false); // eslint-disable-line @typescript-eslint/no-unused-vars
       } else {
         this.displayChangelog = false;
       }
