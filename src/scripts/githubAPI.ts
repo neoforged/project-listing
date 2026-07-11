@@ -1,10 +1,11 @@
 let jsonData: object | undefined = null;
 async function getJson() {
   if (!jsonData) {
-    const safeJson = await import('@/repoInfo.json')
+    const safeJson = await fetch('/repoInfo.json')
+      .then(res => res.json())
       .then(res => {
         console.log(`Found repo info, using the cache.`)
-        return res.default as object;
+        return res as object;
       })
       .catch(_ => { // eslint-disable-line @typescript-eslint/no-unused-vars
         console.log(`Found no repo info json, using the API.`)

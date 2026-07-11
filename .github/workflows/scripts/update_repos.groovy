@@ -135,4 +135,4 @@ repoMap.keySet().forEach { key ->
         commits: readJson("https://api.github.com/repos/${key}/commits?per_page=10")
     ]
 }
-Files.writeString(Path.of('src/repoInfo.json'), new JsonGenerator.Options().build().toJson(repoInfo))
+Files.writeString(Path.of('public/repoInfo.json'), new JsonGenerator.Options().build().toJson(repoInfo))
