@@ -169,8 +169,15 @@ export default {
         for (let i = 0; i < index; i++) {
           customDisplay = customDisplay.replace('${version.' + this.topLevelGroups[i] + '}', this.selectedItem[i])
         }
+
+        // Blame whoever designed this site
+        if (group == "Minecraft_Version" && (version.startsWith("21.") || version.startsWith("20."))) {
+          return "1." + version
+        }
+
         return customDisplay
       }
+
       return version
     }
   },
